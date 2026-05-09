@@ -1,0 +1,84 @@
+# MiApi - ASP.NET Core + Docker
+
+## Requisitos
+
+* Docker Desktop
+* Git
+
+---
+
+## Clonar proyecto
+
+```bash
+git clone https://github.com/TU_USUARIO/mi-api.git
+cd mi-api/MiApi
+```
+
+---
+
+## Construir imagen
+
+```bash
+docker build -t miapi .
+```
+
+---
+
+## Ejecutar contenedor
+
+```bash
+docker run -d \
+-p 8080:8080 \
+--name miapi-container \
+miapi
+```
+
+---
+
+## Probar aplicación
+
+Abrir:
+
+```text
+http://localhost:8080
+```
+
+O usar:
+
+```bash
+curl http://localhost:8080
+```
+
+Respuesta esperada:
+
+```text
+Hello World
+```
+
+---
+
+## Comandos útiles
+
+Ver contenedores:
+
+```bash
+docker ps
+```
+
+Ver logs:
+
+```bash
+docker logs miapi-container
+```
+
+Detener:
+
+```bash
+docker stop miapi-container
+```
+
+Eliminar:
+
+```bash
+docker rm miapi-container
+```

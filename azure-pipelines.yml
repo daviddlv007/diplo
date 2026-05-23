@@ -1,0 +1,61 @@
+trigger:
+  - main
+
+pool:
+  name: Default
+
+variables:
+  buildConfiguration: 'Release'
+
+stages:
+  - stage: CI
+    displayName: 'Integración Continua'
+    jobs:
+      - job: BuildJob
+        displayName: 'Compilar aplicación'
+        steps:
+          - script: dotnet restore
+            displayName: 'Restaurar dependencias'
+
+          - script: dotnet build --configuration $(buildConfiguration) --no-restore
+            displayName: 'Compilar aplicación'
+
+  - stage: Testing
+    displayName: 'Pruebas Unitarias'
+    dependsOn: CI
+    jobs:
+      - job: TestJob
+        displayName: 'Ejecutar pruebas'
+        steps:
+          - script: dotnet restore
+            displayName: 'Restaurar dependencias'
+
+          - script: dotnet test tests/MiApi.Tests/MiApi.Tests.csproj --configuration $(buildConfiguration) --logger trx --results-directory $(Agent.TempDirectory)
+            displayName: 'Ejecutar pruebas unitarias'
+
+          - task: PublishTestResults@2
+            displayName: 'Publicar resultados'
+            inputs:
+              testResultsFormat: 'VSTest'
+              testResultsFiles: '$(Agent.TempDirectory)/*.trx'
+            condition: succeededOrFailed()
+
+  - stage: Delivery
+    displayName: 'Entrega'
+    dependsOn: Testing
+    jobs:
+      - job: DeliveryJob
+        displayName: 'Publicar artefactos'
+        steps:
+          - script: dotnet restore
+            displayName: 'Restaurar dependencias'
+
+          - script: dotnet publish MiApi.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+            displayName: 'Publicar aplicación'
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Generar artefacto final'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'miapi-drop'
+              publishLocation: 'Container'

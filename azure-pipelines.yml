@@ -14,10 +14,10 @@ stages:
       - job: BuildJob
         displayName: 'Compilar aplicación'
         steps:
-          - script: dotnet restore
+          - script: dotnet restore MiApi.sln
             displayName: 'Restaurar dependencias'
 
-          - script: dotnet build --configuration $(buildConfiguration) --no-restore
+          - script: dotnet build MiApi.sln --configuration $(buildConfiguration) --no-restore
             displayName: 'Compilar aplicación'
 
   - stage: Testing
@@ -27,7 +27,7 @@ stages:
       - job: TestJob
         displayName: 'Ejecutar pruebas'
         steps:
-          - script: dotnet restore
+          - script: dotnet restore MiApi.sln
             displayName: 'Restaurar dependencias'
 
           - script: dotnet test tests/MiApi.Tests/MiApi.Tests.csproj --configuration $(buildConfiguration) --logger trx --results-directory $(Agent.TempDirectory)
@@ -47,7 +47,7 @@ stages:
       - job: DeliveryJob
         displayName: 'Publicar artefactos'
         steps:
-          - script: dotnet restore
+          - script: dotnet restore MiApi.sln
             displayName: 'Restaurar dependencias'
 
           - script: dotnet publish MiApi.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)

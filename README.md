@@ -49,7 +49,18 @@ git clone https://github.com/daviddlv007/diplo.git
 cd diplo
 ```
 
-### 2. Opción A: Ejecutar con Docker Compose (Recomendado)
+### 2. Configurar variables de entorno
+Crea un archivo `.env` en la raíz del proyecto:
+```bash
+# .env
+SA_PASSWORD=Tu_Contraseña_Segura_Aqui
+DB_NAME=MiApiDB
+DB_USER=sa
+```
+
+⚠️ **IMPORTANTE**: Agrega `.env` a `.gitignore` para no exponer credenciales en el repositorio.
+
+### 3. Opción A: Ejecutar con Docker Compose (Recomendado)
 ```bash
 docker-compose up --build
 ```
@@ -58,10 +69,8 @@ docker-compose up --build
 - 🐳 **SQL Server**: `localhost:1433`
 - 🌐 **API .NET**: `http://localhost:8080`
 - 📚 **Swagger UI**: `http://localhost:8080/swagger`
-- **Usuario SQL**: `sa`
-- **Contraseña SQL**: `Admin12345*`
 
-### 2. Opción B: Ejecución local sin Docker
+### 4. Opción B: Ejecución local sin Docker
 
 ```bash
 # Restaurar dependencias
@@ -80,14 +89,36 @@ La API estará disponible en `https://localhost:5001` y Swagger en `https://loca
 
 ## 📝 Configuración
 
-### Variables de Entorno y Cadena de Conexión
+### Variables de Entorno (Archivo .env)
 
-**En Docker (automático via `docker-compose.yml`):**
+Todas las credenciales y configuraciones sensibles se cargan desde un archivo `.env` que **NO debe estar en el repositorio**.
+
+**Crear archivo `.env` en la raíz del proyecto:**
+```bash
+# .env (⚠️ NO INCLUIR EN GIT)
+SA_PASSWORD=Tu_Contraseña_Segura_Aqui
+DB_NAME=MiApiDB
+DB_USER=sa
+DB_SERVER=sqlserver
+DATABASE_CONNECTION_STRING=Server=sqlserver;Database=MiApiDB;User Id=sa;Password=Tu_Contraseña_Segura_Aqui;
+```
+
+**En `.gitignore`:**
+```
+.env
+.env.local
+.env.*.local
+```
+
+### Cadena de Conexión
+
+**En Docker (carga desde `.env` via `docker-compose.yml`):**
 ```yaml
-Database: MiApiDB
-User: sa
-Password: Admin12345*
-Server: sqlserver:1433
+services:
+  sqlserver:
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+      MSSQL_DB: ${DB_NAME}
 ```
 
 **Localmente (`appsettings.json`):**
@@ -103,7 +134,7 @@ Server: sqlserver:1433
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=sqlserver;Database=MiApiDB;User Id=sa;Password=Admin12345*;"
+    "DefaultConnection": "${DATABASE_CONNECTION_STRING}"
   }
 }
 ```
@@ -366,7 +397,8 @@ services:
     ports:
       - "1433:1433"
     environment:
-      SA_PASSWORD: Admin12345*
+      SA_PASSWORD: ${SA_PASSWORD}  # Cargado desde .env
+      MSSQL_DB: ${DB_NAME}         # Cargado desde .env
 
   api:
     build: .
@@ -374,6 +406,8 @@ services:
       - "8080:80"
     depends_on:
       - sqlserver
+    env_file:
+      - .env  # Variables de entorno desde .env
 ```
 
 ---
@@ -413,16 +447,6 @@ services:
 Este proyecto está bajo licencia MIT. Consultar `LICENSE` para más detalles.
 
 ---
-
-## 👤 Autor
-
-Desarrollado como proyecto final del **Diplomado en Desarrollo .NET**
-"ConnectionStrings": {
-  "DefaultConnection": "Server=sqlserver;Database=MiApiDB;User Id=sa;Password=Admin12345*;TrustServerCertificate=True;"
-}
-```
- 
----
  
 ## 🐳 Comandos Docker
  
@@ -442,7 +466,7 @@ Desarrollado como proyecto final del **Diplomado en Desarrollo .NET**
 ### 1. Actualizar la cadena de conexión en `appsettings.Development.json`
 ```json
 "ConnectionStrings": {
-  "DefaultConnection": "Server=localhost;Database=MiApiDB;User Id=sa;Password=Admin12345*;TrustServerCertificate=True;"
+  "DefaultConnection": "Server=localhost;Database=MiApiDB;User Id=sa;Password=ContraseñaDeEjemplo;TrustServerCertificate=True;"
 }
 ```
  
@@ -465,10 +489,10 @@ Disponible en: `https://localhost:7041` o `http://localhost:5031`
 **Desde SQL Server Management Studio:**
 - **Server**: `localhost,1433`
 - **Username**: `sa`
-- **Password**: `Admin12345*`
+- **Password**: ContraseñaDeEjemplo
 **Connection String:**
 ```
-Server=localhost,1433;Database=MiApiDB;User Id=sa;Password=Admin12345*;TrustServerCertificate=True;
+Server=localhost,1433;Database=MiApiDB;User Id=sa;Password=ContraseñaDeEjemplo;TrustServerCertificate=True;
 ```
  
 ---

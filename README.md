@@ -161,7 +161,6 @@ docker-compose up --build
  
 | Endpoint | Descripción |
 |----------|-------------|
-| `GET http://localhost:8080/health` | Health Check |
 | `GET http://localhost:8080/swagger` | Documentación Swagger |
  
 ---

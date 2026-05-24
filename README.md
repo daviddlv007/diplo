@@ -466,7 +466,7 @@ Este proyecto está bajo licencia MIT. Consultar `LICENSE` para más detalles.
 ### 1. Actualizar la cadena de conexión en `appsettings.Development.json`
 ```json
 "ConnectionStrings": {
-  "DefaultConnection": "Server=localhost;Database=MiApiDB;User Id=sa;Password=ContraseñaDeEjemplo;TrustServerCertificate=True;"
+  "DefaultConnection": "Server=localhost;Database=MiApiDB;User Id=sa;Password=ContraseñaDeEjemplo;TrustServerCertificate=True;" 
 }
 ```
  

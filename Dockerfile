@@ -12,6 +12,8 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
-EXPOSE 8080
+# Opcional: configurar el puerto
+ENV ASPNETCORE_URLS=http://+:80
+EXPOSE 80
 
 ENTRYPOINT ["dotnet", "MiApi.dll"]

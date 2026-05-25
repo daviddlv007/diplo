@@ -59,3 +59,7 @@ stages:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)'
               ArtifactName: 'miapi-drop'
               publishLocation: 'Container'
+
+          - script: |
+              docker build -t miapp-devops .
+            displayName: 'Build Docker Image'

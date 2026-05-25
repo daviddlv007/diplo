@@ -2,7 +2,7 @@ trigger:
   - main
 
 pool:
-  name: Default
+  vmImage: 'ubuntu-latest'
 
 variables:
   buildConfiguration: 'Release'
@@ -12,11 +12,8 @@ stages:
     displayName: 'Integración Continua'
     jobs:
       - job: BuildJob
-        displayName: 'Compilar aplicación'
         steps:
           - script: dotnet restore MiApi.sln
-            displayName: 'Restaurar dependencias'
-
           - script: dotnet build MiApi.sln --configuration $(buildConfiguration) --no-restore
             displayName: 'Compilar aplicación'
 
@@ -25,41 +22,34 @@ stages:
     dependsOn: CI
     jobs:
       - job: TestJob
-        displayName: 'Ejecutar pruebas'
         steps:
-          - script: dotnet restore MiApi.sln
-            displayName: 'Restaurar dependencias'
-
-          - script: dotnet test tests/MiApi.Tests/MiApi.Tests.csproj --configuration $(buildConfiguration) --logger trx --results-directory $(Agent.TempDirectory)
+          - script: dotnet test tests/MiApi.Tests/MiApi.Tests.csproj --configuration $(buildConfiguration)
             displayName: 'Ejecutar pruebas unitarias'
 
-          - task: PublishTestResults@2
-            displayName: 'Publicar resultados'
-            inputs:
-              testResultsFormat: 'VSTest'
-              testResultsFiles: '$(Agent.TempDirectory)/*.trx'
-            condition: succeededOrFailed()
-
   - stage: Delivery
-    displayName: 'Entrega'
+    displayName: 'Construcción y Despliegue'
     dependsOn: Testing
     jobs:
-      - job: DeliveryJob
-        displayName: 'Publicar artefactos'
+      - job: DockerBuildAndDeploy
         steps:
-          - script: dotnet restore MiApi.sln
-            displayName: 'Restaurar dependencias'
-
-          - script: dotnet publish MiApi.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
-            displayName: 'Publicar aplicación'
-
-          - task: PublishBuildArtifacts@1
-            displayName: 'Generar artefacto final'
+          # 1. Construir y subir imagen al registro (ACR)
+          - task: Docker@2
+            displayName: 'Build and Push'
             inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-              ArtifactName: 'miapi-drop'
-              publishLocation: 'Container'
+              containerRegistry: 'ACR-Conexion'
+              repository: $(imageName)
+              command: 'buildAndPush'
+              Dockerfile: '**/Dockerfile'
+              tags: |
+                $(Build.BuildId)
+                latest
 
-          - script: |
-              docker build -t miapp-devops .
-            displayName: 'Build Docker Image'
+          # 2. Desplegar en Azure App Service usando la imagen recién creada
+          - task: AzureWebAppContainer@1
+            displayName: 'Desplegar en Azure'
+            inputs:
+              azureSubscription: 'Azure-Conexion'
+              appName: $(webAppName)
+              containers: $(azureContainerRegistry)/$(imageName):latest
+              # Inyección segura de la cadena de conexión
+              appSettings: '-ConnectionStrings__DefaultConnection "$(DB_CONNECTION_STRING)"'

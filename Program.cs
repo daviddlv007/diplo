@@ -47,10 +47,7 @@ if (!app.Environment.IsProduction())
 app.UseAuthorization();
 
 // Endpoint de prueba para validar el pipeline CI/CD
-app.MapGet("/", () => "Hello World - Pipeline funcionando")
-   .WithName("HealthCheck")
-   .WithOpenApi()
-   .Produces(200);
+app.MapGet("/", () => "Hello World - Pipeline funcionando");
 
 app.MapControllers();
 

@@ -17,7 +17,7 @@ services:
     container_name: miapi
     restart: always
     ports:
-      - "8080:8080"
+      - "8080:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=MiApiDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
